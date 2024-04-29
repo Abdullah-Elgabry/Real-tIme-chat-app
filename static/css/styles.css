@@ -1,0 +1,123 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #0b0b0b;
+}
+
+.hello {
+  font-family: Arial, sans-serif;
+  font-size: 70px;
+}
+
+.welcome{
+  color: white;
+  margin-left: -140px;
+  background: -webkit-linear-gradient(#62cff4, #2c67f2);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #171717;
+  border-radius: 25px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 50px;
+  width: 80%;
+  color: rgb(255, 255, 255);
+  max-width: calc(600px - 20px);
+  margin-left: 100px;
+  overflow-y: auto;
+  max-height: 500px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.messages-content {
+  width: calc(100% - 20px);
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+input:focus {
+  outline: none;
+  box-shadow: 0 0 2px 1px #2c67f2;
+}
+.dropdown{
+  position: absolute;
+  margin-top: -34px;
+  margin-left: 230px;
+}
+p {
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 80%;
+  word-wrap: break-word;
+  margin-left: 500px;
+  background-color: #12abde;
+}
+
+p:nth-child(even) {
+  background-color: #2c67f2;
+  margin-left: -500px;
+}
+
+.cap{
+  position: absolute;
+  margin-top: -33px;
+  margin-left: 240px;
+}
+
+.image-upload-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: -35px;
+  margin-left: 149px;
+}
+
+.image-upload-label:hover {
+  border-color: #2c67f2;
+}
+
+.doc-upload-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 15px;
+  margin-left: 424px;
+}
+
+.messages::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background-color: #62cff4;
+  border-radius: 10px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background-color: #171717;
+}

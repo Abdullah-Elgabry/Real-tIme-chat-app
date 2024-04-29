@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>ChatApp</title>
+    <style>
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            padding: 12px 16px;
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hello">
+        <h1 class="welcome">Hello, <br>There..</h1>
+    </div>
+    <div class="messages">
+        <input placeholder="Enter a Prompt Here..." id="messageInput" />
+        <div class="dropdown">
+            <img src="./static/img/selection.png" width="30px" >
+            <div class="dropdown-content">
+                <div class="emoji" data-emoji="❤️">❤️</div>
+                <div class="emoji" data-emoji="😊">😊</div>
+            </div>
+        </div>
+        <div class="sticky-container">
+            <label for="img" class="image-upload-label">
+                <img src="./static/img/upload.png" width="30px" alt="Upload Image">
+            </label>
+            <input type="file" id="img" accept="image/*" style="display: none;">
+            <button class="cap" id="take-photo">
+                <img src="./static/img/camera.png" width="20px"/>
+            </button>
+            <canvas id="canvas" width="300" height="300" style="display: none;"></canvas>
+        </div>
+        <label for="doc" class="doc-upload-label">
+            <img src="./static/img/file.png" width="30px">
+        </label>
+        <input type="file" id="doc" accept=".pdf,.doc,.docx" style="display: none;">
+    </div>
+
+    <script>
+        const socket = io();
+
+        document.querySelectorAll('.dropdown-content .emoji').forEach(item => {
+            item.addEventListener('click', event => {
+                const emoji = item.getAttribute('data-emoji');
+                socket.emit("message", emoji);
+            });
+        });
+
+        let messageContainer = document.querySelector(".messages");
+        let messageInput = document.getElementById("messageInput");
+        let imageInput = document.getElementById("img");
+        let documentInput = document.getElementById("doc");
+        let takePhotoButton = document.getElementById("take-photo");
+        let canvas = document.getElementById("canvas");
+        let ctx = canvas.getContext("2d");
+        let stream;
+
+        messageInput.addEventListener("keypress", (e) => {
+            if (e.which === 13) {
+                socket.emit("message", messageInput.value);
+                messageInput.value = "";
+            }
+        });
+
+        imageInput.addEventListener("change", (e) => {
+            let file = imageInput.files[0];
+            let reader = new FileReader();
+            reader.addEventListener("load", () => {
+                let img = document.createElement("img");
+                img.src = reader.result;
+                socket.emit("image", reader.result);
+            });
+            reader.readAsDataURL(file);
+        });
+
+        documentInput.addEventListener("change", (e) => {
+            let file = documentInput.files[0];
+            let reader = new FileReader();
+            reader.addEventListener("load", () => {
+                socket.emit("document", { name: file.name, data: reader.result });
+            });
+            reader.readAsDataURL(file);
+        });
+
+        takePhotoButton.addEventListener("click", () => {
+            if (!stream) {
+                navigator.mediaDevices
+                    .getUserMedia({ video: true, audio: false })
+                    .then((s) => {
+                        stream = s;
+                        let video = document.createElement("video");
+                        video.srcObject = stream;
+                        video.play();
+
+                        setTimeout(() => {
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            let imageData = canvas.toDataURL();
+                            socket.emit("image", imageData);
+                            stopStream();
+                            canvas.style.display = "none";
+                        },1000);
+                    })
+                    .catch((error) => console.error("Error accessing camera:", error));
+            } else {
+                let video = document.createElement("video");
+                video.srcObject = stream;
+                video.play();
+
+                canvas.style.display = "block";
+
+                setTimeout(() => {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    let imageData = canvas.toDataURL();
+                    socket.emit("image", imageData);
+                    stopStream();
+                    canvas.style.display = "none";
+                }, 1000);
+            }
+        });
+
+        socket.on("message", (message) => {
+            appendMessage(message);
+        });
+
+        socket.on("image", (image_data) => {
+            let img = document.createElement("img");
+            img.src = image_data;
+            img.width = 300;
+            img.height = 300;
+            messageContainer.appendChild(img);
+        });
+
+        socket.on("document", (document_data) => {
+            let link = document.createElement("a");
+            link.href = document_data.data;
+            link.download = document_data.name;
+            link.innerText = document_data.name;
+            messageContainer.appendChild(link);
+        });
+
+        function appendMessage(message) {
+            let messageElement = document.createElement("p");
+            messageElement.innerText = message;
+            messageContainer.appendChild(messageElement);
+        }
+
+        function stopStream() {
+            if (stream) {
+                stream.getTracks().forEach((track) => track.stop());
+                stream = null;
+            }
+        }
+    </script>
+</body>
+
+</html>
